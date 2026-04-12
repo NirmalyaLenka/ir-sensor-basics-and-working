@@ -237,3 +237,5 @@ Pull requests are welcome. Feel free to open an issue for bugs, improvements, or
 ## Topics
 
 esp32  ir-sensor  infrared  obstacle-detection  arduino  iot  digital-sensor  embedded  robotics  automation
+<img width="324" height="163" alt="image" src="https://github.com/user-attachments/assets/55adefca-bdaf-44b3-bd83-694422ff12e5" />
+

@@ -1,258 +1,89 @@
-# ir-sensor-basics-and-working
-in this repo you will know about ir sensor and how its work and a example code to run with esp
-# ESP32 + IR Obstacle Detection Sensor
+# ESP32 IR Obstacle Sensor
 
-Detect nearby objects and obstacles in real time using an IR (Infrared) sensor module with an ESP32 microcontroller. The sketch tracks detection events, counts triggers, and measures how long an object stays in range.
+A small Arduino example that reads a digital IR obstacle-sensor module with an ESP32. The firmware logs detection and clearance transitions, counts detection events, records approximate event timestamps, and measures how long the output remains in the detected state.
 
----
+## Behavior
 
-## Components Required
+The sketch assumes a common active-low module:
 
-| Component | Quantity |
-|-----------|----------|
-| ESP32 Dev Board | 1 |
-| IR Obstacle Sensor Module | 1 |
-| Jumper Wires | 3 |
-| Breadboard (optional) | 1 |
+- **LOW:** object detected
+- **HIGH:** no object detected
 
-Most IR obstacle sensor modules include an onboard IR LED, IR receiver, LM393 comparator, and a potentiometer for sensitivity adjustment.
+Module polarity varies. Confirm the OUT signal and onboard indicator on your particular sensor before relying on these labels. The detection distance depends on the target surface, ambient infrared light, module design, and potentiometer setting.
 
----
+## Hardware and wiring
 
-## Wiring Diagram
+| IR module | ESP32 |
+| --- | --- |
+| VCC | 3.3 V |
+| GND | GND |
+| OUT | GPIO 34 |
 
+GPIO 34 is input-only on the classic ESP32 and can be used for digital input. Power the module at 3.3 V for this setup and make sure OUT never exceeds the ESP32 GPIO voltage limit. Do not connect a 5 V output directly to an ESP32 input.
+
+## Bill of materials
+
+| Item | Qty. | Notes |
+| --- | ---: | --- |
+| ESP32 development board | 1 | Classic ESP32 pin mapping |
+| IR obstacle sensor module | 1 | Digital OUT type |
+| Jumper wires | 3 | VCC, GND, OUT |
+| USB data cable | 1 | Upload and Serial Monitor |
+| Breadboard | 1, optional | For prototyping |
+
+## Setup
+
+1. Install the [Arduino IDE](https://www.arduino.cc/en/software).
+2. Install ESP32 board support using Espressif's board-manager package URL:
+   `https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json`
+3. Open `ir sensor esp32.ino` in Arduino IDE.
+4. Select the target ESP32 board and serial port, then compile and upload.
+5. Open Serial Monitor at **115200 baud**.
+
+No extra Arduino library is required; the sketch uses `digitalRead()`, `millis()`, and standard Arduino APIs.
+
+## What the code records
+
+- Detection event count since boot
+- Timestamp in seconds since boot
+- Time between a detection transition and the corresponding clear transition
+- Periodic status output every two seconds
+
+The 10 ms loop delay is a simple polling interval, not a guaranteed debounce or safety-rated detection system. Brief transitions can be missed, and this reflective sensor is not suitable as a safety barrier.
+
+## Repository structure
+
+```text
+ir-sensor-basics-and-working/
+├── ir sensor esp32.ino   # Main ESP32 firmware sketch
+└── README.md             # Wiring, setup, BOM, behavior, and limitations
 ```
-IR Module       ESP32
----------       -----
-VCC    -------> 3.3V
-GND    -------> GND
-OUT    -------> GPIO 34
-```
-
-Note: GPIO 34 is an input-only pin on the ESP32, which makes it ideal for reading digital sensor signals without accidental misconfiguration.
-
----
-
-## How It Works
-
-The IR LED on the module continuously emits infrared light. When an object comes within range, the reflected infrared light is picked up by the IR receiver. The onboard LM393 comparator then pulls the OUT pin LOW to signal detection.
-
-- OUT = LOW  means an object is detected
-- OUT = HIGH means no object is in range
-
-The detection distance can be adjusted by turning the onboard potentiometer, typically ranging from around 2 cm to 30 cm depending on the module.
-
----
-
-## Setup and Installation
-
-### 1. Install Arduino IDE
-
-Download from https://www.arduino.cc/en/software
-
-### 2. Add ESP32 Board Support
-
-1. Open Arduino IDE and go to File > Preferences
-2. Add the following URL to Additional Boards Manager URLs:
-
-```
-https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
-```
-
-3. Go to Tools > Board > Boards Manager
-4. Search for esp32 and click Install
-
-### 3. No Extra Libraries Needed
-
-This project uses only the built-in digitalRead() function. No additional libraries are required.
-
-### 4. Upload the Sketch
-
-1. Open ir_sensor_esp32.ino in Arduino IDE
-2. Select your board: Tools > Board > ESP32 Dev Module
-3. Select the correct port: Tools > Port
-4. Click Upload
-
----
-
-## Serial Monitor Output
-
-Open Serial Monitor at 115200 baud. You will see event-based output plus a periodic status line every 2 seconds.
-
-```
-=================================
-  ESP32 + IR Sensor Demo
-=================================
-OUT Pin     : GPIO 34
-Logic       : LOW = Object Detected
-              HIGH = No Object
----------------------------------
-IR sensor initialized successfully.
-Waiting for object detection...
-
---- IR Sensor Event ---
-Status      : OBJECT DETECTED
-Event Count : 1
-Timestamp   : 4.32 s
------------------------
-
---- IR Sensor Event ---
-Status      : OBJECT CLEARED
-Object held : 843 ms
-Timestamp   : 5.16 s
------------------------
-
-[Status] 6.0s | No Object | Total Detections: 1
-```
-
----
-
-## Configuration
-
-### Sensitivity / Detection Distance
-
-Turn the potentiometer on the sensor module clockwise to increase sensitivity (detect farther objects) or counterclockwise to reduce it. Adjust until the onboard LED lights up reliably when your target object is at the desired distance.
-
-### Detection Pin
-
-If you need to use a different GPIO pin, change this line in the code:
-
-```cpp
-#define IR_SENSOR_PIN  34
-```
-
-Use any GPIO pin that supports digital input on your ESP32 board.
-
----
-
-## Features
-
-| Feature | Description |
-|---------|-------------|
-| Object Detection | Detects presence of any IR-reflective object |
-| Event Logging | Logs each detection and clearance event separately |
-| Object Duration | Measures how long an object stays in the detection zone |
-| Event Counter | Tracks total number of detection events since power-on |
-| Periodic Status | Prints a status summary every 2 seconds |
-
----
 
 ## Troubleshooting
 
-| Problem | Solution |
-|---------|----------|
-| No detection at all | Check OUT pin is connected to GPIO 34; verify power |
-| Always shows detected | Object too close or sensitivity too high; turn potentiometer back |
-| Unstable flickering | Adjust potentiometer; avoid strong ambient IR sources like sunlight |
-| Board not recognized | Install CP210x or CH340 USB driver for your ESP32 board |
-| No serial output | Ensure baud rate is set to 115200 in Serial Monitor |
+| Symptom | Check |
+| --- | --- |
+| No detection | Confirm OUT wiring, module power, and sensitivity potentiometer |
+| Always detected | Check the module's active logic and adjust sensitivity |
+| Unstable output | Reduce ambient IR interference and adjust the potentiometer |
+| No serial text | Select the correct port and 115200 baud |
+| ESP32 resets or input heats | Disconnect power and check for an unsafe 5 V signal |
 
----
+## Project extensions
 
-## Possible Projects Using This Sensor
+- Add a configurable active-high/active-low setting
+- Add a proper state debounce or interrupt-driven event capture where appropriate
+- Log events to an OLED, SD card, or local dashboard
+- Use two sensors for direction-aware counting
 
-The IR obstacle sensor is one of the most versatile and beginner-friendly sensors available. Below are project ideas across different skill levels.
+## Skills and technologies
 
+`ESP32` · `Arduino C++` · `GPIO` · `Digital sensors` · `Event logging`
 
-### Beginner
+## Maintenance & audit
 
-**Automatic Hand Sanitizer Dispenser**
-Trigger a pump or servo motor when a hand is detected in front of the sensor. No contact required, making it hygienic and practical for home or school use.
-
-**Doorbell or Visitor Alert**
-Place the sensor at a doorway or entrance. When someone walks through, the ESP32 sends a notification, triggers a buzzer, or logs the entry time to a display or serial port.
-
-**Object Counter**
-Mount the sensor across a conveyor or narrow opening. Each time an object breaks the IR beam, increment a counter. Display the count on an OLED screen or send it to a web dashboard.
-
-**Night Light Trigger**
-Combine the IR sensor with an LDR. Turn on an LED or lamp only when it is dark AND someone is nearby, saving power compared to a simple always-on night light.
-
-
-### Intermediate
-
-**Line-Following Robot**
-Mount two or more IR sensors on the underside of a robot chassis. Use the reflection difference between a dark line and a light surface to steer motors and follow a track.
-
-**Obstacle-Avoiding Robot**
-Attach the IR sensor to the front of a rover. When an obstacle is detected, the ESP32 commands the motors to stop, reverse, and turn before continuing forward.
-
-**Automatic Trash Can Lid**
-Use the sensor above the bin to detect when a hand approaches. A servo motor opens the lid automatically and closes it after a set delay. No need to touch the bin.
-
-**Slot Machine / Game Token Counter**
-Mount the sensor inside a coin or token slot. Each time a token passes through, count it and update a score or unlock a game action via the ESP32.
-
-
-### Advanced
-
-**People Counter for Room Occupancy**
-Use two IR sensors spaced apart at a doorway. By detecting the order in which the sensors trigger, determine if someone entered or exited. Send occupancy data over Wi-Fi to an MQTT broker or a web server.
-
-**Conveyor Belt Speed Monitor**
-Attach a reflective strip to a rotating shaft or belt. Count pulses per second from the IR sensor to calculate RPM or belt speed in real time.
-
-**Security Perimeter with Alerts**
-Place multiple IR sensors along a boundary. When any sensor triggers, the ESP32 logs the zone, timestamps the event, and sends an alert via email or Telegram using its Wi-Fi capability.
-
-**Smart Parking System**
-Install sensors at each parking space. The ESP32 reads all sensors and reports which spaces are occupied to a central display or web interface, helping drivers find open spots quickly.
-
-**Automated Plant Watering with Presence Detection**
-Combine the IR sensor with a soil moisture sensor. Only run the watering pump when the plant area is unoccupied, avoiding accidental spraying on people or pets nearby.
-
----
-
-## Project Structure
-
-```
-esp32-ir-sensor/
-|
-|-- ir_sensor_esp32.ino   # Main Arduino sketch
-|-- README.md             # This file
-```
-
----
-
-## Resources
-
-- ESP32 GPIO Reference: https://randomnerdtutorials.com/esp32-pinout-reference-gpios/
-- Arduino digitalRead(): https://www.arduino.cc/reference/en/language/functions/digital-io/digitalread/
-- LM393 Comparator Datasheet: https://www.ti.com/product/LM393
-
----
-
-## License
-
-This project is open source and available under the MIT License.
-
----
-
-## Contributing
-
-Pull requests are welcome. Feel free to open an issue for bugs, improvements, or new project ideas.
-
----
-
-## Topics
-
-esp32  ir-sensor  infrared  obstacle-detection  arduino  iot  digital-sensor  embedded  robotics  automation
-<img width="324" height="163" alt="image" src="https://github.com/user-attachments/assets/55adefca-bdaf-44b3-bd83-694422ff12e5" />
-<img width="324" height="163" alt="image" src="https://github.com/user-attachments/assets/6eefec86-f1f2-47af-836c-81f5afe48eb4" />
-
-
-
----
-
-## Skills & technologies
-
-`Arduino/C++`
-
-
-## Maintenance & Audit
-
-- **Audit date:** 10 November 2026
-- **Documentation status:** README reviewed and audit record added on this date.
-- **Scope and evidence:** This entry records a documentation-level maintenance pass. It does not by itself establish that source code compiles, dependencies are current, security has been tested, or hardware/runtime behavior has been verified.
-- **Code and tests:** No new functional code changes or test results are claimed by this README update. Run the project-specific build, test, and hardware/runtime checks before relying on it.
-- **Maintenance baseline:** Documentation status recorded through 10 November 2026; revisit dependencies, setup instructions, known limitations, and tests whenever the project changes.
+- **Last updated:** 10 November 2026
+- **Review scope:** Checked the tracked sketch against the documented pin, logic, file path, features, and BOM.
+- **Documentation changes:** Corrected the sketch path and clarified the module's assumed active-low behavior, voltage safety, and limitations.
+- **Firmware status:** No firmware change was made; no compile or physical hardware test was run.
+- **License:** No `LICENSE` file was found in the current root listing, so this README does not claim a specific reuse license.

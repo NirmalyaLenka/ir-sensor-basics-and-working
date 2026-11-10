@@ -244,6 +244,11 @@ esp32  ir-sensor  infrared  obstacle-detection  arduino  iot  digital-sensor  em
 
 ---
 
+## Skills & technologies
+
+`Arduino/C++`
+
+
 ## Maintenance & Audit
 
 - **Audit date:** 10 November 2026

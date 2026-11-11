@@ -82,7 +82,7 @@ ir-sensor-basics-and-working/
 
 ## Maintenance & audit
 
-- **Last updated:** 10 November 2026
+- **Last updated:** 11 November 2026
 - **Review scope:** Checked the tracked sketch against the documented pin, logic, file path, features, and BOM.
 - **Documentation changes:** Corrected the sketch path and clarified the module's assumed active-low behavior, voltage safety, and limitations.
 - **Firmware status:** No firmware change was made; no compile or physical hardware test was run.
